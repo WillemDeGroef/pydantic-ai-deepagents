@@ -7,7 +7,7 @@ packages = ["src/pydantic_ai_deepagents"]
 
 [project]
 name = "pydantic-ai-deepagents"
-version = "0.1.0"
+version = "0.0.2"
 description = "Deep agents built with pydantic-ai"
 readme = "README.md"
 requires-python = ">=3.12"
