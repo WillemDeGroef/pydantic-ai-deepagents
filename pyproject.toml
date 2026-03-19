@@ -12,7 +12,7 @@ description = "Deep agents built with pydantic-ai"
 readme = "README.md"
 requires-python = ">=3.12"
 license = "MIT"
-authors = [{ name = "Willem" }]
+authors = [{ name = "wdg" }]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -21,7 +21,7 @@ classifiers = [
 dependencies = ["pydantic-ai"]
 
 [project.urls]
-Repository = "https://github.com/willemdh/pydantic-ai-deepagents"
+Repository = "https://github.com/willemdg/pydantic-ai-deepagents"
 
 [dependency-groups]
 dev = ["ruff", "ty"]
