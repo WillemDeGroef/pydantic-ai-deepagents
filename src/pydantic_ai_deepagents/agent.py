@@ -34,6 +34,9 @@ from pydantic_ai_deepagents.tools.skills import (
 )
 from pydantic_ai_deepagents.tools.subagent import task
 from pydantic_ai_deepagents.tools.shell import execute
+from pydantic_ai_deepagents.tools.context import compact_conversation
+from pydantic_ai_deepagents.context import ContextConfig
+from pydantic_ai_deepagents.run import ManagedAgent
 
 
 def create_deep_agent(
@@ -45,6 +48,8 @@ def create_deep_agent(
     inline_skills: list[Skill] | None = None,
     enable_shell: bool = False,
     enable_subagents: bool = True,
+    enable_context_management: bool = True,
+    context_config: ContextConfig | None = None,
     workspace: Path | None = None,
     max_sub_agent_depth: int = 2,
 ) -> tuple[Agent[DeepAgentDeps, str], DeepAgentDeps]:
@@ -66,6 +71,8 @@ def create_deep_agent(
                        Useful for in-memory or programmatically created skills.
         enable_shell: Whether to enable the `execute` shell tool.
         enable_subagents: Whether to enable the `task` sub-agent tool.
+        enable_context_management: Whether to enable context compression tools.
+        context_config: Configuration for context compression thresholds.
         workspace: Optional disk directory for real file I/O and shell.
         max_sub_agent_depth: How many levels deep sub-agents can nest.
 
@@ -113,6 +120,10 @@ def create_deep_agent(
     if enable_subagents:
         agent.tool(task)
 
+    # ── Optional: context management ─────────────────────────────────────
+    if enable_context_management:
+        agent.tool(compact_conversation)
+
     # ── Optional: shell execution ───────────────────────────────────────
     if enable_shell or workspace is not None:
         agent.tool(execute)
@@ -123,11 +134,30 @@ def create_deep_agent(
             agent.tool(tool_fn)
 
     # ── Build deps ──────────────────────────────────────────────────────
+    ctx_config = context_config if enable_context_management else None
+
     deps = DeepAgentDeps(
         workspace=workspace,
         model_name=model,
         max_sub_agent_depth=max_sub_agent_depth,
         skills=loaded_skills,
+        context_config=ctx_config,
     )
 
     return agent, deps
+
+
+def create_managed_agent(
+    **kwargs: Any,
+) -> ManagedAgent:
+    """Create a deep agent wrapped with automatic context management.
+
+    Accepts the same arguments as create_deep_agent().
+    Returns a ManagedAgent that compresses context between turns.
+    """
+    context_config = kwargs.pop("context_config", None) or ContextConfig()
+    kwargs.setdefault("enable_context_management", True)
+    kwargs["context_config"] = context_config
+
+    agent, deps = create_deep_agent(**kwargs)
+    return ManagedAgent(agent, deps, context_config)

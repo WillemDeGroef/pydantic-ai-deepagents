@@ -83,9 +83,13 @@ class DeepAgentDeps:
     max_sub_agent_depth: int = 2
     _current_depth: int = field(default=0, repr=False)
 
-    # ── summarization ───────────────────────────────────────────────────
+    # ── context management ───────────────────────────────────────────────
     total_tokens_estimate: int = field(default=0, repr=False)
     max_context_chars: int = 100_000
+    context_config: Any = (
+        None  # typed as ContextConfig at runtime; Any avoids circular import
+    )
+    _compact_requested: int = field(default=0, repr=False)
 
     def next_todo_id(self) -> int:
         tid = self._next_todo_id
